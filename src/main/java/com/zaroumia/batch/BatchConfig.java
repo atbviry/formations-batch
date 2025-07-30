@@ -29,17 +29,17 @@ public class BatchConfig {
      *
      * @return bean
      */
-@Bean
+    @Bean
     public JobParametersValidator defaultJobParametersValidator() {
         DefaultJobParametersValidator defaultValidator = new DefaultJobParametersValidator();
-    defaultValidator.setRequiredKeys(new String[]{"formateursFile", "formationsFile", "seancesFile"});
-    //defaultValidator.setOptionalKeys(new String[]{"run.id"}); pas de besoin  dans cette version
+        defaultValidator.setRequiredKeys(new String[]{"formateursFile", "formationsFile", "seancesFile"});
+        //defaultValidator.setOptionalKeys(new String[]{"run.id"}); pas de besoin  dans cette version,  j'arrive a le lancer au tant de fois que je veux sans exception already raidy exist.
         return defaultValidator;
     }
 
     @Bean
-    MyJobParametersValidator myJobParametersValidator () {
-    return new MyJobParametersValidator();
+    MyJobParametersValidator myJobParametersValidator() {
+        return new MyJobParametersValidator();
     }
 
 //    @Bean
@@ -59,24 +59,32 @@ public class BatchConfig {
         return composite;
     }
 
-    @Bean
-    public HelloWordTasklet helloWordTasklet() {
-        return new HelloWordTasklet();
-    }
+//    @Bean
+//    public HelloWordTasklet helloWordTasklet() {
+//        return new HelloWordTasklet();
+//    }
+
+//    @Bean
+//    public Step step1(JobRepository jobRepository, PlatformTransactionManager transactionManager) {
+//        return new StepBuilder("step1", jobRepository)
+//                .tasklet(helloWordTasklet(), transactionManager)
+//                .build();
+//    }
+
+//    @Bean
+//    public Job helloWordJob(JobRepository jobRepository, PlatformTransactionManager transactionManager) {
+//        return new JobBuilder("hello-word-job", jobRepository)
+//                .validator(compositeValidator())
+//                .start(step1(jobRepository, transactionManager))
+//                //.incrementer(new RunIdIncrementer()) //pas de besoin  dans cette version
+//                .build();
+//    }
 
     @Bean
-    public Step step1(JobRepository jobRepository, PlatformTransactionManager transactionManager) {
-        return new StepBuilder("step1", jobRepository)
-                .tasklet(helloWordTasklet(), transactionManager)
-                .build();
-    }
-
-@Bean
-    public Job helloWordJob(JobRepository jobRepository, PlatformTransactionManager transactionManager) {
-        return new JobBuilder("hello-word-job", jobRepository)
+    public Job formationsBatch(JobRepository jobRepository, Step chargementFormateurStep) {
+        return new JobBuilder("formations-batch", jobRepository)
                 .validator(compositeValidator())
-                .start(step1(jobRepository, transactionManager))
-                //.incrementer(new RunIdIncrementer()) //pas de besoin  dans cette version
+                .start(chargementFormateurStep)
                 .build();
     }
 }
