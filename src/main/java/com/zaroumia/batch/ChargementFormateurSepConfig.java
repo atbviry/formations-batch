@@ -7,6 +7,8 @@ import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
+import org.springframework.batch.item.database.JdbcBatchItemWriter;
+import org.springframework.batch.item.database.builder.JdbcBatchItemWriterBuilder;
 import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.builder.FlatFileItemReaderBuilder;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,6 +17,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.PathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.transaction.PlatformTransactionManager;
+
+import javax.sql.DataSource;
+
+import static com.zaroumia.batch.FormateurItemPreparedStatementSetter.FORMATEUR_INSERT_QUERY;
 
 //https://copilot.microsoft.com/chats/Pxg6fkmCVbp8YLSyKwHdd
 @Configuration
@@ -54,9 +60,19 @@ public class ChargementFormateurSepConfig {
 
     //https://copilot.microsoft.com/chats/GLGeiJigNfSzZmEMTYuSr
 //https://stackoverflow.com/questions/46403159/spring-batch-input-resource-must-exist-reader-is-in-strict-mode-error
+    //Test ItemReader ok
+//    @Bean
+//    public ItemWriter<Formateur> formateurItemWriter() {
+//        return (items) -> items.forEach(System.out::println);
+//    }
+
     @Bean
-    public ItemWriter<Formateur> formateurItemWriter() {
-        return (items) -> items.forEach(System.out::println);
+    public JdbcBatchItemWriter<Formateur> formateurItemWriter(final DataSource dataSource) {
+        return new JdbcBatchItemWriterBuilder<Formateur>()
+                .dataSource(dataSource)
+                .sql(FORMATEUR_INSERT_QUERY)
+                .itemPreparedStatementSetter(new FormateurItemPreparedStatementSetter())
+                .build();
     }
 
     @Bean
@@ -64,7 +80,8 @@ public class ChargementFormateurSepConfig {
         return new StepBuilder("chargementFormateurStep", jobRepository)
                 .<Formateur, Formateur>chunk(10, transactionManager)
                 .reader(formateurItemReader(null))
-                .writer(formateurItemWriter())
+                .writer(formateurItemWriter(null))
                 .build();
     }
+
 }
