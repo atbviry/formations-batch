@@ -1,4 +1,4 @@
-package com.zaroumia.batch;
+package com.zaroumia.batch.mapper;
 
 import com.zaroumia.batch.domaine.Formateur;
 import org.springframework.batch.item.database.ItemPreparedStatementSetter;
